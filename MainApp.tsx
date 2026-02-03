@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
 import { authClient } from './lib/auth';
+import { useAuth } from '@neondatabase/neon-js/auth/react';
+import { fetchUserData, saveUserData } from './services/db';
 import { Chore, Day, EarningsRecord, Profile, ParentSettings, PastChoreApproval, CompletionSnapshot, CompletionState, PayDayConfig, BonusNotification, BeforeInstallPromptEvent } from './types';
 import Header from './components/Header';
 import ChoreList from './components/ChoreList';
@@ -37,30 +39,12 @@ import NewDayLoader from './components/NewDayLoader';
 const getStoredData = <T,>(key: string, defaultValue: T): T => {
     try {
         const item = window.localStorage.getItem(key);
-        // If no item exists, or it's an empty string, return the default.
-        if (!item) {
-            return defaultValue;
-        }
-
+        if (!item) return defaultValue;
         const parsed = JSON.parse(item);
-
-        // If the stored value is null (e.g., the string "null" was stored),
-        // it's almost always safer to fall back to the default value.
-        if (parsed === null) {
-            return defaultValue;
-        }
-
-        // Add a basic type check to prevent crashes from malformed data.
-        // If the default is an array, we must return an array.
-        if (Array.isArray(defaultValue) && !Array.isArray(parsed)) {
-            console.warn(`Data for key "${key}" is not an array, returning default.`);
-            return defaultValue;
-        }
-
+        if (parsed === null) return defaultValue;
+        if (Array.isArray(defaultValue) && !Array.isArray(parsed)) return defaultValue;
         return parsed;
     } catch (error) {
-        // If parsing fails for any reason, fall back to the default.
-        console.warn(`Error reading localStorage key “${key}”:`, error);
         return defaultValue;
     }
 };
@@ -71,6 +55,15 @@ const setStoredData = <T,>(key: string, value: T): void => {
     } catch (error) {
         console.warn(`Error setting localStorage key “${key}”:`, error);
     }
+};
+
+// Helper to debounce saving to DB
+const debounce = (func: Function, wait: number) => {
+  let timeout: any;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
 };
 
 
@@ -477,8 +470,11 @@ const themeCycle = [
 ];
 
 const AppContent: React.FC = () => {
+  const { signOut } = useAuth();
+  const { userId } = useAuth();
   const [deviceType, setDeviceType] = useState<string | null>(() => localStorage.getItem('deviceType'));
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   
   // Data states from localStorage
   const [profiles, setProfiles] = useState<Profile[]>(() => getStoredData('profiles', []));
@@ -572,6 +568,76 @@ const AppContent: React.FC = () => {
     isPasscodeManagementModalOpen
   ]);
 
+  // Sync Logic
+  // 1. Initial Load
+  useEffect(() => {
+    const initSync = async () => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
+      setIsSyncing(true);
+      const remoteData = await fetchUserData(userId);
+      if (remoteData) {
+        // Hydrate state from DB
+        setProfiles(remoteData.profiles || []);
+        setParentSettings(remoteData.parentSettings || { passcode: null, theme: 'light', defaultChoreValue: 20, defaultBonusValue: 100, customCategories: [] });
+        setChoresByProfile(remoteData.choresByProfile || {});
+        setEarningsHistoryByProfile(remoteData.earningsHistoryByProfile || {});
+        setPendingCashOutsByProfile(remoteData.pendingCashOutsByProfile || {});
+        setPastChoreApprovalsByProfile(remoteData.pastChoreApprovalsByProfile || {});
+        setPendingBonusNotificationsByProfile(remoteData.pendingBonusNotificationsByProfile || {});
+        
+        // Also update localStorage so it's fresh
+        setStoredData('profiles', remoteData.profiles);
+        setStoredData('parentSettings', remoteData.parentSettings);
+        setStoredData('choresByProfile', remoteData.choresByProfile);
+        setStoredData('earningsHistoryByProfile', remoteData.earningsHistoryByProfile);
+        setStoredData('pendingCashOutsByProfile', remoteData.pendingCashOutsByProfile);
+        setStoredData('pastChoreApprovalsByProfile', remoteData.pastChoreApprovalsByProfile);
+        setStoredData('pendingBonusNotificationsByProfile', remoteData.pendingBonusNotificationsByProfile);
+      } else {
+        // No remote data, this might be first time or offline. 
+        // We could push current local data to DB if local has data and DB is empty.
+        // For now, we just rely on the next update to push.
+      }
+      setIsSyncing(false);
+      setIsLoading(false);
+    };
+
+    initSync();
+  }, [userId]);
+
+  // 2. Debounced Save on State Change
+  const debouncedSave = useMemo(
+    () => debounce((uid: string, data: any) => {
+        saveUserData(uid, data);
+        // console.log('Synced to Neon');
+    }, 2000),
+    []
+  );
+
+  useEffect(() => {
+    if (!userId || isSyncing) return;
+
+    const dataToSave = {
+        profiles,
+        parentSettings,
+        choresByProfile,
+        earningsHistoryByProfile,
+        pendingCashOutsByProfile,
+        pastChoreApprovalsByProfile,
+        pendingBonusNotificationsByProfile
+    };
+
+    debouncedSave(userId, dataToSave);
+  }, [
+    userId, isSyncing, profiles, parentSettings, choresByProfile, 
+    earningsHistoryByProfile, pendingCashOutsByProfile, 
+    pastChoreApprovalsByProfile, pendingBonusNotificationsByProfile, debouncedSave
+  ]);
+
+
   // Global scroll lock effect
   useEffect(() => {
     const shouldLock = isAnyModalOpen || isFabMenuOpen || isProfileMenuOpen;
@@ -626,11 +692,12 @@ const AppContent: React.FC = () => {
 
     // --- End Loading ---
     const timer = setTimeout(() => {
-      setIsLoading(false);
+      // Loading state is now handled by the sync logic too
+      if(!isSyncing) setIsLoading(false);
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [deviceType]);
+  }, [deviceType, isSyncing]);
 
   // Effect for handling date change while app is in background
   useEffect(() => {
@@ -1520,7 +1587,6 @@ const AppContent: React.FC = () => {
   return (
     <div className="h-screen flex flex-col relative">
       <ThemeStyles />
-      {/* @ts-ignore */}
       <NewDayLoader isLoading={isLoading} />
       <SideMenu
         isOpen={isSideMenuOpen}
