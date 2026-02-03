@@ -10,7 +10,8 @@ import { authClient } from './lib/auth';
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
+    // Use absolute path '/sw.js' so it works from sub-routes like /auth/sign-in
+    navigator.serviceWorker.register('/sw.js')
       .then(registration => {
         console.log('ServiceWorker registration successful with scope: ', registration.scope);
       })
