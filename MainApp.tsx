@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
 import { authClient } from './lib/auth';
-import { useAuth } from '@neondatabase/neon-js/auth/react';
 import { fetchUserData, saveUserData } from './services/db';
 import { Chore, Day, EarningsRecord, Profile, ParentSettings, PastChoreApproval, CompletionSnapshot, CompletionState, PayDayConfig, BonusNotification, BeforeInstallPromptEvent } from './types';
 import Header from './components/Header';
@@ -470,8 +469,7 @@ const themeCycle = [
 ];
 
 const AppContent: React.FC = () => {
-  const { signOut } = useAuth();
-  const { userId } = useAuth();
+  const [userId, setUserId] = useState<string | null>(null);
   const [deviceType, setDeviceType] = useState<string | null>(() => localStorage.getItem('deviceType'));
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -572,41 +570,44 @@ const AppContent: React.FC = () => {
   // 1. Initial Load
   useEffect(() => {
     const initSync = async () => {
-      if (!userId) {
-        setIsLoading(false);
-        return;
+      // Get user ID from authClient directly to avoid hook issue
+      const client = authClient as any;
+      const currentUserId = client.userId || client.user?.id || client.session?.user?.id;
+      
+      if (currentUserId) {
+        setUserId(currentUserId);
+        setIsSyncing(true);
+        const remoteData = await fetchUserData(currentUserId);
+        if (remoteData) {
+          // Hydrate state from DB
+          setProfiles(remoteData.profiles || []);
+          setParentSettings(remoteData.parentSettings || { passcode: null, theme: 'light', defaultChoreValue: 20, defaultBonusValue: 100, customCategories: [] });
+          setChoresByProfile(remoteData.choresByProfile || {});
+          setEarningsHistoryByProfile(remoteData.earningsHistoryByProfile || {});
+          setPendingCashOutsByProfile(remoteData.pendingCashOutsByProfile || {});
+          setPastChoreApprovalsByProfile(remoteData.pastChoreApprovalsByProfile || {});
+          setPendingBonusNotificationsByProfile(remoteData.pendingBonusNotificationsByProfile || {});
+          
+          // Also update localStorage so it's fresh
+          setStoredData('profiles', remoteData.profiles);
+          setStoredData('parentSettings', remoteData.parentSettings);
+          setStoredData('choresByProfile', remoteData.choresByProfile);
+          setStoredData('earningsHistoryByProfile', remoteData.earningsHistoryByProfile);
+          setStoredData('pendingCashOutsByProfile', remoteData.pendingCashOutsByProfile);
+          setStoredData('pastChoreApprovalsByProfile', remoteData.pastChoreApprovalsByProfile);
+          setStoredData('pendingBonusNotificationsByProfile', remoteData.pendingBonusNotificationsByProfile);
+        } else {
+          // No remote data, this might be first time or offline. 
+          // We could push current local data to DB if local has data and DB is empty.
+          // For now, we just rely on the next update to push.
+        }
+        setIsSyncing(false);
       }
-      setIsSyncing(true);
-      const remoteData = await fetchUserData(userId);
-      if (remoteData) {
-        // Hydrate state from DB
-        setProfiles(remoteData.profiles || []);
-        setParentSettings(remoteData.parentSettings || { passcode: null, theme: 'light', defaultChoreValue: 20, defaultBonusValue: 100, customCategories: [] });
-        setChoresByProfile(remoteData.choresByProfile || {});
-        setEarningsHistoryByProfile(remoteData.earningsHistoryByProfile || {});
-        setPendingCashOutsByProfile(remoteData.pendingCashOutsByProfile || {});
-        setPastChoreApprovalsByProfile(remoteData.pastChoreApprovalsByProfile || {});
-        setPendingBonusNotificationsByProfile(remoteData.pendingBonusNotificationsByProfile || {});
-        
-        // Also update localStorage so it's fresh
-        setStoredData('profiles', remoteData.profiles);
-        setStoredData('parentSettings', remoteData.parentSettings);
-        setStoredData('choresByProfile', remoteData.choresByProfile);
-        setStoredData('earningsHistoryByProfile', remoteData.earningsHistoryByProfile);
-        setStoredData('pendingCashOutsByProfile', remoteData.pendingCashOutsByProfile);
-        setStoredData('pastChoreApprovalsByProfile', remoteData.pastChoreApprovalsByProfile);
-        setStoredData('pendingBonusNotificationsByProfile', remoteData.pendingBonusNotificationsByProfile);
-      } else {
-        // No remote data, this might be first time or offline. 
-        // We could push current local data to DB if local has data and DB is empty.
-        // For now, we just rely on the next update to push.
-      }
-      setIsSyncing(false);
       setIsLoading(false);
     };
 
     initSync();
-  }, [userId]);
+  }, []);
 
   // 2. Debounced Save on State Change
   const debouncedSave = useMemo(
