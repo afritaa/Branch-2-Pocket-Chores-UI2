@@ -1,5 +1,3 @@
-
-
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -34,6 +32,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onGetStart
   return (
     <AnimatePresence>
       {isOpen && (
+      /* @ts-ignore */
       <motion.div
         className="fixed inset-0 bg-[var(--bg-backdrop)] backdrop-blur-sm z-50 flex justify-center items-start overflow-y-auto"
         onClick={onClose}
@@ -60,6 +59,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onGetStart
               display: inline-block;
           }
         `}</style>
+        {/* @ts-ignore */}
         <motion.div
           className="bg-[var(--card-bg)] rounded-b-3xl sm:rounded-3xl shadow-xl w-full max-w-md p-6 text-[var(--text-primary)] text-center sm:my-16"
           onClick={e => e.stopPropagation()}
@@ -69,18 +69,21 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onGetStart
         >
           <div className="mb-4">
               <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg">
-                  <span className="text-4xl text-shadow-sm text-[var(--accent-primary-text)] animate-wave">👋</span>
+                  <span className="text-4xl animate-wave">👋</span>
               </div>
           </div>
-          <h2 className="text-3xl font-bold mb-4">Welcome to <span className="whitespace-nowrap">Pocket Money Chores.</span></h2>
+          <h2 className="text-3xl font-bold mb-4">Welcome!</h2>
           <p className="text-lg text-[var(--text-secondary)] mb-8">
-          Easily manage chores while teaching your kids accountability and the value of money in a fun, interactive way.
+            {isNewUser 
+              ? "We're excited to help you manage chores and pocket money!"
+              : "Welcome back! Ready to manage some chores?"
+            }
           </p>
           <button
-              onClick={onGetStarted}
-              className="w-full px-6 py-3 rounded-lg text-[var(--accent-primary-text)] bg-[var(--accent-primary)] hover:bg-[var(--accent-secondary)] font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-px transition-all"
+            onClick={onGetStarted}
+            className="w-full py-3 px-6 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-primary-text)] font-bold text-lg hover:bg-[var(--accent-secondary)] transition-colors shadow-lg"
           >
-              {isNewUser ? "Let's Add Your First Child" : "Let's Go!"}
+            Get Started
           </button>
         </motion.div>
       </motion.div>

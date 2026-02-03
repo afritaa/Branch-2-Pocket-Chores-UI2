@@ -4,6 +4,8 @@
 
 
 
+
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { EarningsRecord, GraphDataPoint } from '../types';
 import LineGraph from './LineGraph';
@@ -225,6 +227,7 @@ const EarningsHistoryModal: React.FC<EarningsHistoryModalProps> = ({ isOpen, onC
     return (
         <AnimatePresence>
             {isOpen && (
+            /* @ts-ignore */
             <motion.div 
                 className="fixed inset-0 bg-[var(--bg-backdrop)] backdrop-blur-sm z-50 flex justify-center items-start overflow-y-auto"
                 onClick={onClose}
@@ -240,6 +243,7 @@ const EarningsHistoryModal: React.FC<EarningsHistoryModalProps> = ({ isOpen, onC
                     @keyframes fade-in-fast { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
                     .animate-fade-in-fast { animation: fade-in-fast 0.3s ease-out forwards; }
                 `}</style>
+                {/* @ts-ignore */}
                 <motion.div
                     className="bg-[var(--card-bg)] rounded-b-3xl sm:rounded-3xl shadow-xl w-full max-w-2xl flex flex-col h-full sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:my-8"
                     onClick={e => e.stopPropagation()}

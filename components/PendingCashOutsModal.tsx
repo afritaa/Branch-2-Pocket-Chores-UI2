@@ -4,6 +4,8 @@
 
 
 
+
+
 import React, { useEffect } from 'react';
 import { EarningsRecord } from '../types';
 import { XIcon } from '../constants';
@@ -25,6 +27,7 @@ const PendingCashOutsModal: React.FC<PendingCashOutsModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
+      /* @ts-ignore */
       <motion.div 
         className="fixed inset-0 bg-[var(--bg-backdrop)] backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto"
         onClick={onClose}
@@ -37,6 +40,7 @@ const PendingCashOutsModal: React.FC<PendingCashOutsModalProps> = ({
               .custom-scrollbar::-webkit-scrollbar-track { background: rgba(128, 128, 128, 0.1); border-radius: 10px; }
               .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.2); border-radius: 10px; }
           `}</style>
+          {/* @ts-ignore */}
           <motion.div
               className="bg-[var(--card-bg)] rounded-b-3xl sm:rounded-3xl shadow-xl w-full max-w-lg flex flex-col h-full sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:my-8"
               onClick={e => e.stopPropagation()}

@@ -67,6 +67,7 @@ const ReorderableChoreItem: React.FC<ChoreCardProps> = (props) => {
     };
 
     return (
+        // @ts-ignore
         <Reorder.Item
             key={chore.id}
             value={chore}

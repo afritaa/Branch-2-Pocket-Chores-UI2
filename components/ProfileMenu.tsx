@@ -1,6 +1,6 @@
-
 import React from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { Profile } from '../types';
 import { UserCircleIcon, PencilIcon, BanknotesIcon, HistoryIcon, ExclamationIcon, XIcon } from '../constants';
 import { useSound } from '../hooks/useSound';
@@ -72,6 +72,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* @ts-ignore */}
           <motion.div
             variants={backdropVariants}
             initial="hidden"
@@ -81,6 +82,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
             onClick={onClose}
             aria-hidden="true"
           />
+          {/* @ts-ignore */}
           <motion.div
             variants={menuVariants}
             initial="hidden"

@@ -1,8 +1,6 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { ParentSettings, Profile } from '../types';
-import { SettingsIcon, UserCircleIcon, PencilIcon, ArrowDownOnSquareIcon, LockClosedIcon, XIcon } from '../constants';
+import { SettingsIcon, UserCircleIcon, PencilIcon, ArrowDownOnSquareIcon, LockClosedIcon, XIcon, LogoutIcon } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface OptionsMenuModalProps {
@@ -15,9 +13,10 @@ interface OptionsMenuModalProps {
   onInstallApp: () => void;
   canInstall: boolean;
   onManagePasscode: () => void;
+  onSignOut: () => void;
 }
 
-const OptionsMenuModal: React.FC<OptionsMenuModalProps> = ({ isOpen, onClose, settings, onUpdateSettings, profiles, onEditProfile, onInstallApp, canInstall, onManagePasscode }) => {
+const OptionsMenuModal: React.FC<OptionsMenuModalProps> = ({ isOpen, onClose, settings, onUpdateSettings, profiles, onEditProfile, onInstallApp, canInstall, onManagePasscode, onSignOut }) => {
   const [defaultChoreValue, setDefaultChoreValue] = useState(String(settings.defaultChoreValue || 20));
   const [defaultChoreUnit, setDefaultChoreUnit] = useState<'cents' | 'dollars'>('cents');
   const [defaultBonusValue, setDefaultBonusValue] = useState(String(settings.defaultBonusValue || 100));
@@ -187,6 +186,14 @@ const OptionsMenuModal: React.FC<OptionsMenuModalProps> = ({ isOpen, onClose, se
                       <button onClick={onManagePasscode} className="w-full flex items-center justify-center gap-2 text-[var(--text-primary)] bg-transparent hover:bg-[var(--bg-tertiary)] font-semibold py-3 px-4 rounded-lg transition-colors border border-[var(--border-secondary)]">
                           <LockClosedIcon className="w-5 h-5" />
                           <span>Manage Passcode</span>
+                      </button>
+                  </fieldset>
+
+                  <fieldset className="space-y-3 p-4 border border-[var(--border-secondary)] rounded-lg">
+                      <legend className="text-lg font-semibold px-2 text-[var(--text-secondary)]">Account</legend>
+                      <button onClick={onSignOut} className="w-full flex items-center justify-center gap-2 text-[var(--danger)] bg-transparent hover:bg-[var(--danger-bg-subtle)] font-semibold py-3 px-4 rounded-lg transition-colors border border-[var(--danger-border)]">
+                          <LogoutIcon className="w-5 h-5" />
+                          <span>Sign Out</span>
                       </button>
                   </fieldset>
 

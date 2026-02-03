@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { XIcon } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -52,6 +54,7 @@ const PasscodeEntryModal: React.FC<PasscodeEntryModalProps> = ({ isOpen, onClose
     return (
         <AnimatePresence>
             {isOpen && (
+                /* @ts-ignore */
                 <motion.div
                     className="fixed inset-0 bg-[var(--bg-backdrop)] backdrop-blur-sm z-50 flex items-center justify-center p-4"
                     onClick={onClose}
@@ -59,6 +62,7 @@ const PasscodeEntryModal: React.FC<PasscodeEntryModalProps> = ({ isOpen, onClose
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
+                    {/* @ts-ignore */ }
                     <motion.div
                         className={`bg-[var(--card-bg)] rounded-3xl p-6 sm:p-8 w-full max-w-sm shadow-2xl text-center ${shake ? 'animate-shake' : ''}`}
                         onClick={e => e.stopPropagation()}

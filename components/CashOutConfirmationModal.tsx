@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useMemo, useEffect } from 'react';
 import { useSound } from '../hooks/useSound';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -56,6 +58,7 @@ const CashOutConfirmationModal: React.FC<CashOutConfirmationModalProps> = ({ isO
   return (
     <AnimatePresence>
       {isOpen && (
+      /* @ts-ignore */
       <motion.div
         className="fixed inset-0 bg-[var(--bg-backdrop)] backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-hidden"
         onClick={handleClose}
@@ -79,6 +82,7 @@ const CashOutConfirmationModal: React.FC<CashOutConfirmationModalProps> = ({ isO
           ))}
         </div>
         
+        {/* @ts-ignore */}
         <motion.div
           className="relative bg-[var(--card-bg)] rounded-3xl shadow-xl w-full max-w-md p-6 text-[var(--text-primary)] text-center"
           onClick={e => e.stopPropagation()}

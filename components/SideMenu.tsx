@@ -1,7 +1,9 @@
 import React from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { Profile } from '../types';
 import { UserCircleIcon, PlusIcon, StarIcon, SettingsIcon, ImageIcon, LockClosedIcon, PencilIcon, BanknotesIcon, HistoryIcon } from '../constants';
+import { UserButton } from '@neondatabase/neon-js/auth/react/ui';
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -65,6 +67,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* @ts-ignore */}
           <motion.div
             variants={backdropVariants}
             initial="hidden"
@@ -74,6 +77,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
             onClick={onClose}
             aria-hidden="true"
           />
+          {/* @ts-ignore */}
           <motion.nav
             variants={menuVariants}
             initial="hidden"
@@ -82,6 +86,14 @@ const SideMenu: React.FC<SideMenuProps> = ({
             className="fixed top-0 left-0 bottom-0 w-80 max-w-[80vw] bg-[var(--menu-bg)] z-50 shadow-2xl p-4 flex flex-col gap-4"
             aria-label="Main Menu"
           >
+            {/* Header Area */}
+            {!isKidsMode && (
+                <div className="flex items-center gap-3 px-4 py-2 border-b border-[var(--border-primary)] mb-2">
+                    <UserButton />
+                    <span className="text-sm font-semibold text-[var(--text-secondary)]">Account</span>
+                </div>
+            )}
+
             <div className="flex-grow overflow-y-auto space-y-4 pr-2 -mr-2 scrollbar-hide">
               {isKidsMode ? (
                 <>

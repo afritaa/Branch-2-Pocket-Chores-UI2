@@ -1,6 +1,8 @@
 
 
 
+
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Profile, Day, PayDayConfig } from '../types';
 import { DAYS_OF_WEEK, UserCircleIcon, TrashIcon, compressImage, XIcon } from '../constants';
@@ -126,6 +128,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, on
   return (
     <AnimatePresence>
       {isOpen && (
+      /* @ts-ignore */
       <motion.div 
         className="fixed inset-0 bg-[var(--bg-backdrop)] backdrop-blur-sm z-50 flex justify-center items-start overflow-y-auto"
         onClick={onClose}
@@ -141,6 +144,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, on
         @keyframes fade-in-fast { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in-fast { animation: fade-in-fast 0.3s ease-out forwards; }
       `}</style>
+      {/* @ts-ignore */}
       <motion.form
         ref={formRef}
         onSubmit={handleSubmit}

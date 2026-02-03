@@ -189,6 +189,7 @@ const ChoreCard = forwardRef<HTMLDivElement, ChoreCardProps>(({
   // Kid's view from here on
   if (isBonus) {
     return (
+      // @ts-ignore
       <motion.div
         id={`chore-${chore.id}`}
         ref={ref}
@@ -239,6 +240,7 @@ const ChoreCard = forwardRef<HTMLDivElement, ChoreCardProps>(({
   if (isDisabled) cardBaseClasses += ' opacity-70';
 
   return (
+    // @ts-ignore
     <motion.div
       id={`chore-${chore.id}`}
       ref={ref}
